@@ -20,6 +20,8 @@ class CityTableViewControler: UIViewController {
         tableView.dataSource = self
         zipField.delegate = self
         
+        zipField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
         WeatherViewModel.startUp(){
             DispatchQueue.main.async {
                 self.tableView.reloadData()
@@ -114,10 +116,9 @@ extension TableViewFunctions: UITableViewDelegate, UITableViewDataSource{
 typealias TextfieldFunctions = CityTableViewControler
 extension TextfieldFunctions: UITextFieldDelegate{
     
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        guard let text = textField.text else{return false}
-        guard text.count == 5 else{return false}
+    @objc func textFieldDidChange(){
+        guard let text = zipField.text else{return}
+        guard text.count == 5 else{return}
         
         
         WeatherViewModel.callNetwork(text){
@@ -132,9 +133,29 @@ extension TextfieldFunctions: UITextFieldDelegate{
                 self.cityLabel.text = name
             }
         }
-        
-        return true
     }
+    
+    
+//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+//        guard let text = textField.text else{return false}
+//        guard text.count == 5 else{return false}
+//
+//
+//        WeatherViewModel.callNetwork(text){
+//            guard let name = WeatherViewModel.getCityName(true) else{
+//                DispatchQueue.main.async {
+//                    self.cityLabel.text = "???"
+//                }
+//                return
+//            }
+//            WeatherViewModel.callNetwork(nil){}
+//            DispatchQueue.main.async {
+//                self.cityLabel.text = name
+//            }
+//        }
+//
+//        return true
+//    }
     
     
 }
