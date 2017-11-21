@@ -12,9 +12,13 @@ class CityTableViewControler: UIViewController {
     @IBOutlet weak var tableView:UITableView!
     @IBOutlet weak var cityLabel:UILabel!
     @IBOutlet weak var zipField:UITextField!
+    @IBOutlet weak var addButton:UIButton!
+    @IBOutlet weak var removeButton:UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        aesthetics()
         
         tableView.delegate = self
         tableView.dataSource = self
@@ -31,6 +35,24 @@ class CityTableViewControler: UIViewController {
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+    
+    func aesthetics(){
+        self.view.backgroundColor = UIColor.black
+        tableView.backgroundColor = UIColor.black
+        cityLabel.textColor = UIColor.magenta
+        addButton.backgroundColor = UIColor.clear
+        addButton.setTitleColor(UIColor.magenta, for: .normal)
+        addButton.layer.cornerRadius = 2
+        addButton.layer.borderWidth = 1
+        addButton.layer.borderColor = UIColor.magenta.cgColor
+        removeButton.backgroundColor = UIColor.clear
+        removeButton.setTitleColor(UIColor.magenta, for: .normal)
+        removeButton.layer.cornerRadius = 2
+        removeButton.layer.borderWidth = 1
+        removeButton.layer.borderColor = UIColor.magenta.cgColor
+        zipField.backgroundColor = UIColor.gray
+        //zipField.textColor = UIColor.magenta
     }
 
     @IBAction func add(_ sender:AnyObject){
@@ -102,13 +124,19 @@ extension TableViewFunctions: UITableViewDelegate, UITableViewDataSource{
         
         WeatherViewModel.setIndex(indexPath.row)
         cell.textLabel?.text = WeatherViewModel.getCityName(false)
+        cell.textLabel?.textColor = UIColor.magenta
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         WeatherViewModel.setIndex(indexPath.row)
         performSegue(withIdentifier: "CityWeatherSegue", sender: self)
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.backgroundColor = .clear
     }
     
 }
@@ -118,7 +146,11 @@ extension TextfieldFunctions: UITextFieldDelegate{
     
     @objc func textFieldDidChange(){
         guard let text = zipField.text else{return}
-        guard text.count == 5 else{return}
+        guard text.count == 5 else{
+            guard text.count > 5 else{return}
+            cityLabel.text = "???"
+            return
+        }
         
         
         WeatherViewModel.callNetwork(text){
@@ -134,30 +166,6 @@ extension TextfieldFunctions: UITextFieldDelegate{
             }
         }
     }
-    
-    
-//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-//        guard let text = textField.text else{return false}
-//        guard text.count == 5 else{return false}
-//
-//
-//        WeatherViewModel.callNetwork(text){
-//            guard let name = WeatherViewModel.getCityName(true) else{
-//                DispatchQueue.main.async {
-//                    self.cityLabel.text = "???"
-//                }
-//                return
-//            }
-//            WeatherViewModel.callNetwork(nil){}
-//            DispatchQueue.main.async {
-//                self.cityLabel.text = name
-//            }
-//        }
-//
-//        return true
-//    }
-    
-    
 }
 
 

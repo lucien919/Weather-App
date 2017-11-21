@@ -43,9 +43,7 @@ class WeatherViewModel {
                 }
                 completion()
             }
-            
         }
-        
     }
     
     static func addLocation(){
@@ -56,23 +54,6 @@ class WeatherViewModel {
         images?.append(currentImage)
         
         saveToCoreData()
-    }
-    
-    private static func saveToCoreData(){
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let managedContext = appDelegate.persistentContainer.viewContext
-        guard let entity = NSEntityDescription.entity(forEntityName: "WeatherInfo", in: managedContext) else {return}
-        let weather = NSManagedObject(entity: entity, insertInto: managedContext)
-
-        guard let z = zips?.last else{return}
-        weather.setValue(z, forKey: "zip")
-
-        do {
-            try managedContext.save()
-            storedLocations?.append(weather)
-        } catch let error {
-            print(error.localizedDescription)
-        }
     }
     
     static func removeLocation(){
@@ -91,26 +72,6 @@ class WeatherViewModel {
         }
     }
     
-    private static func removeFromCoreData(_ indx:Int){
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let managedContext = appDelegate.persistentContainer.viewContext
-
-        guard let val = storedLocations?[indx] else{return}
-        managedContext.delete(val)
-        storedLocations?.remove(at: indx)
-
-        do{
-            try managedContext.save()
-        }catch let error{
-            print(error.localizedDescription)
-        }
-    }
-    
-    static func getCount()->Int{
-        guard let count = locations?.count else{return 0}
-        return count
-    }
-    
     static func determineIfExists()->Bool{
         guard let cl = currentLocation else{return false}
         
@@ -123,42 +84,6 @@ class WeatherViewModel {
         return returnVal
     }
     
-    static func callNetwork(_ zip:String?, completion: @escaping ()->()){
-        
-        guard let z = zip else{
-            //guard let index = self.index else{return}
-            //guard let icon = locations?[index].weather.first?.icon else{return}
-            guard let icon = currentLocation?.weather.first?.icon else{return}
-            let fullURL = Networking.iconURLBase+icon+".png"
-            
-            Networking.getAPI(fullURL, true){
-                (val, error) in
-                guard error==nil else{return}
-                guard let pic = val as? UIImage else{return}
-                self.currentImage = pic
-                completion()
-            }
-            return
-        }
-        
-        let fullURL = Networking.baseURL+z+",us&units=imperial&appid=4b77a8ebb74639a773447819601e9363"
-        
-        Networking.getAPI(fullURL, false){
-            (val, error) in
-            guard error==nil else{return}
-            
-            guard let weather = val as? Info else{
-                resetCurrentLocation()
-                completion()
-                return
-            }
-            self.currentLocation = weather
-            self.currentZip = zip
-            
-            completion()
-        }
-    }
-    
     static func resetCurrentLocation(){
         currentLocation = nil
         currentZip = nil
@@ -167,6 +92,15 @@ class WeatherViewModel {
     static func setIndex(_ val:Int){
         guard val < self.locations?.count ?? 0 else{return}
         self.index = val
+    }
+}
+
+typealias GetFunctions = WeatherViewModel
+extension GetFunctions{
+    
+    static func getCount()->Int{
+        guard let count = locations?.count else{return 0}
+        return count
     }
     
     static func getCityName(_ val:Bool)->String?{
@@ -254,6 +188,47 @@ class WeatherViewModel {
         guard let pic = images?[index] else{return #imageLiteral(resourceName: "Default")}
         return pic
     }
+
+}
+
+typealias CoreDataFunctions = WeatherViewModel
+extension CoreDataFunctions{
+    
+    private static func saveToCoreData(){
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let managedContext = appDelegate.persistentContainer.viewContext
+        guard let entity = NSEntityDescription.entity(forEntityName: "WeatherInfo", in: managedContext) else {return}
+        let weather = NSManagedObject(entity: entity, insertInto: managedContext)
+        
+        guard let z = zips?.last else{return}
+        weather.setValue(z, forKey: "zip")
+        
+        do {
+            try managedContext.save()
+            storedLocations?.append(weather)
+        } catch let error {
+            print(error.localizedDescription)
+        }
+    }
+    
+    private static func removeFromCoreData(_ indx:Int){
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let managedContext = appDelegate.persistentContainer.viewContext
+        
+        guard let val = storedLocations?[indx] else{return}
+        managedContext.delete(val)
+        storedLocations?.remove(at: indx)
+        
+        do{
+            try managedContext.save()
+        }catch let error{
+            print(error.localizedDescription)
+        }
+    }
+}
+
+typealias NetworkFunctions = WeatherViewModel
+extension NetworkFunctions{
     
     static func updateLocation(completion: @escaping ()->()){
         guard let index = self.index else{return}
@@ -270,13 +245,42 @@ class WeatherViewModel {
         }
     }
     
+    static func callNetwork(_ zip:String?, completion: @escaping ()->()){
+        
+        guard let z = zip else{
+            //guard let index = self.index else{return}
+            //guard let icon = locations?[index].weather.first?.icon else{return}
+            guard let icon = currentLocation?.weather.first?.icon else{return}
+            let fullURL = Networking.iconURLBase+icon+".png"
+            
+            Networking.getAPI(fullURL, true){
+                (val, error) in
+                guard error==nil else{return}
+                guard let pic = val as? UIImage else{return}
+                self.currentImage = pic
+                completion()
+            }
+            return
+        }
+        
+        let fullURL = Networking.baseURL+z+",us&units=imperial&appid=4b77a8ebb74639a773447819601e9363"
+        
+        Networking.getAPI(fullURL, false){
+            (val, error) in
+            guard error==nil else{return}
+            
+            guard let weather = val as? Info else{
+                resetCurrentLocation()
+                completion()
+                return
+            }
+            self.currentLocation = weather
+            self.currentZip = zip
+            
+            completion()
+        }
+    }
 }
-
-
-
-
-
-
 
 
 

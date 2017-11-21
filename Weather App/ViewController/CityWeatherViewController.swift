@@ -22,6 +22,7 @@ class CityWeatherViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        aesthetics()
         WeatherViewModel.updateLocation(){
             DispatchQueue.main.async {
                 self.setUp()
@@ -47,6 +48,18 @@ class CityWeatherViewController: UIViewController {
         humidity.text = WeatherViewModel.getHumidity()
         windSpeed.text = WeatherViewModel.getWindSpeed()
         windDirection.text = WeatherViewModel.getWindDirection()
+    }
+    
+    func aesthetics(){
+        self.view.backgroundColor = UIColor.black
+        cityNameLabel.textColor = UIColor.magenta
+        weatherDescription.textColor = UIColor.magenta
+        temperature.textColor = UIColor.magenta
+        minTemp.textColor = UIColor.magenta
+        maxTemp.textColor = UIColor.magenta
+        humidity.textColor = UIColor.magenta
+        windSpeed.textColor = UIColor.magenta
+        windDirection.textColor = UIColor.magenta
     }
 
 }
