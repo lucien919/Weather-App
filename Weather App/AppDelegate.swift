@@ -77,6 +77,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func saveContext () {
         let context = persistentContainer.viewContext
+        let newContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        newContext.parent = context
         if context.hasChanges {
             do {
                 try context.save()
